@@ -10,9 +10,9 @@ import { UserModule } from './user/user.module';
 @Module({
   imports: [
     TypeOrmModule.forRoot(typeOrmConfig),
-    AuthModule, 
-    TodoModule, 
-    UserModule
-  ]
+    AuthModule,
+    TodoModule,
+    UserModule,
+  ],
 })
 export class AppModule {}
