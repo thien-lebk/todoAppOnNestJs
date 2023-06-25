@@ -4,7 +4,7 @@ export class UserInfoDto {
   @ApiProperty({
     required: false,
   })
-  petName: string;
+  fullName: string;
 
   @ApiProperty({
     type: 'file',
@@ -21,7 +21,7 @@ export class UserInfoDto {
   @ApiProperty({
     required: false,
   })
-  modified_photo: string;
+  modifiedPhoto: string;
 
   @ApiProperty({
     required: false,

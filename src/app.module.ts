@@ -6,6 +6,8 @@ import { AuthModule } from './auth/auth.module';
 import { TodoModule } from './todo/todo.module';
 import * as typeOrmConfig from './typeorm.config';
 import { UserModule } from './user/user.module';
+import { ProjectModule } from './project/project.module';
+import { PhaseModule } from './phase/phase.module';
 
 @Module({
   imports: [
@@ -13,6 +15,8 @@ import { UserModule } from './user/user.module';
     AuthModule,
     TodoModule,
     UserModule,
+    ProjectModule,
+    PhaseModule,
   ],
 })
 export class AppModule {}
