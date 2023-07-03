@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Param,
   Post,
   UseGuards,
   UsePipes,
@@ -17,6 +18,8 @@ import { User } from '../auth/entity/user.entity';
 import { ProjectDto } from './dto/project.dto';
 import { ProjectPayload } from './interface/project-payload.interface';
 import { ProjectService } from './service/project.service';
+import { TablePayload } from 'src/utils/dto/table.dto';
+import { TableResponsePayload } from 'src/utils/payload/table.payload';
 
 // < -- Swagger Implementation Start -- >
 @ApiTags('Project')
@@ -36,12 +39,19 @@ export class ProjectController {
     return this.projectService.createProject(projectDto, user);
   }
   @Get()
-  getListProjectByUser(@GetUser() user: User): Promise<ProjectPayload[]> {
-    return this.projectService.getListProjectByUser(user);
+  getListProjectByUser(@GetUser() user: User, @Param() table: TablePayload) {
+    return this.projectService.getListProjectByUser(
+      user,
+      table.page ?? 1,
+      table.pageSize ?? 10,
+    );
   }
 
-  @Delete()
-  deleteProject(@GetUser() user: User): Promise<ProjectPayload[]> {
-    return this.projectService.getListProjectByUser(user);
+  @Delete(':uuid')
+  deleteProject(
+    @GetUser() user: User,
+    @Param('uuid') uuid: string,
+  ): Promise<ProjectPayload> {
+    return this.projectService.deleteProject(user, uuid);
   }
 }

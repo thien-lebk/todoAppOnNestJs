@@ -39,6 +39,12 @@ export class Project extends BaseEntity {
   @OneToMany(() => Phase, (phase) => phase.project)
   phase: Phase[];
 
+  @Column({ type: 'timestamptz', nullable: false })
+  createdAt: Date;
+
+  @Column({ type: 'timestamptz', nullable: false })
+  updatedAt: Date;
+
   @ManyToMany(() => User, (user) => user.projects, {
     eager: true,
     // {onDelete: 'NO ACTION', onUpdate: 'NO ACTION'},

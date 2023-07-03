@@ -8,6 +8,7 @@ import { ProjectPayload } from '../interface/project-payload.interface';
 import { convertProjectToPayload } from '../util/project.utl';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ProjectRepository } from '../repository/project.repository';
+import { TableResponsePayload } from 'src/utils/payload/table.payload';
 
 @Injectable()
 export class ProjectService {
@@ -21,7 +22,14 @@ export class ProjectService {
     user: User,
   ): Promise<ProjectPayload> {
     try {
-      const { name, description, users } = projectDto;
+      const {
+        name,
+        description,
+        users = [],
+        startDate,
+        endDate,
+        budget,
+      } = projectDto;
       const userList = await this.userService.getListUserByListUuid(
         users.map((ele) => ele.uuid),
       );
@@ -29,7 +37,12 @@ export class ProjectService {
       project.name = name;
       project.uuid = uuid();
       project.description = description;
+      project.startDate = startDate;
+      project.endDate = endDate;
+      project.budget = budget;
       project.users = [...userList, user];
+      project.createdAt = new Date();
+      project.updatedAt = new Date();
       await project.save();
       const projectPayload: ProjectPayload = convertProjectToPayload(project);
       return projectPayload;
@@ -76,19 +89,25 @@ export class ProjectService {
       throw error;
     }
   }
-  async getListProjectByUser(user: User): Promise<ProjectPayload[]> {
+  async getListProjectByUser(
+    user: User,
+    page: number,
+    pageSize: number,
+  ): Promise<TableResponsePayload<ProjectPayload>> {
     try {
-      const projects = await this.projectRepository
+      const [projects, total] = await this.projectRepository
         .createQueryBuilder('project')
+        .orderBy('project.createdAt', 'DESC', 'NULLS LAST')
         .leftJoinAndSelect('project.users', 'user')
         .where('user.uuid = :uuid', { uuid: user.uuid })
         .where('project.isDeleted = :isDelete', { isDelete: false })
-        .getMany();
-
+        .skip((page - 1) * pageSize)
+        .take(pageSize)
+        .getManyAndCount();
       const projectPayloads: ProjectPayload[] = projects.map((ele) =>
         convertProjectToPayload(ele),
       );
-      return projectPayloads;
+      return { data: projectPayloads, total: total, page };
     } catch (error) {
       throw error;
     }
@@ -111,15 +130,20 @@ export class ProjectService {
       throw error;
     }
   }
-  async deleteProject(user: User, uuid: string): Promise<Project> {
+  async deleteProject(user: User, uuid: string): Promise<ProjectPayload> {
     try {
       if (!uuid) {
         throw new BadRequestException('Uuid is required');
       }
+      const checkUserInProject = this.isUserInProject(user.uuid, uuid);
+      if (!checkUserInProject) {
+        throw new BadRequestException('User is not in project');
+      }
       const project = await this.projectRepository.findOne({ where: { uuid } });
       if (!project) throw new Error('Project is not exist');
       project.isDeleted = true;
-      return project.save();
+      await project.save();
+      return convertProjectToPayload(project);
     } catch (error) {
       throw error;
     }

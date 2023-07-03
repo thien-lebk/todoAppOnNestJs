@@ -15,7 +15,7 @@ import { configService } from 'src/config/config.service';
     JwtModule.register({
       secret: configService.getJwtSecret(),
       signOptions: {
-        expiresIn: +process.env.APP_EXPIRES,
+        expiresIn: +360000000,
       },
     }),
     TypeOrmModule.forFeature([UserRepository]),

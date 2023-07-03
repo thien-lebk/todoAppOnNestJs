@@ -6,6 +6,7 @@ import { SignupCredentialsDto } from '../dto/signup-credentials.dto';
 import { JwtPayload } from '../interface/jwt-payload.interface';
 import { UserRepository } from '../repository/user.repository';
 import { User } from '../entity/user.entity';
+import { UserInfoPayload } from '../interface/user-info-payload.interface copy';
 
 @Injectable()
 export class AuthService {
@@ -23,7 +24,7 @@ export class AuthService {
 
   async signIn(
     signInCredentialsDto: SignInCredentialsDto,
-  ): Promise<{ accessToken: string; user: JwtPayload }> {
+  ): Promise<{ accessToken: string; user: UserInfoPayload }> {
     const resp = await this.userRepository.validateUserPassword(
       signInCredentialsDto,
     );
@@ -33,10 +34,15 @@ export class AuthService {
 
     const payload: JwtPayload = resp;
     const accessToken = await this.jwtService.sign(payload);
-
+    const userInfo = {
+      email: resp.username,
+      name: resp.userInfo.fullName,
+      address: resp.userInfo.address,
+      photo: resp.userInfo.photo,
+    };
     return {
       accessToken,
-      user: resp,
+      user: userInfo,
     };
   }
 }
